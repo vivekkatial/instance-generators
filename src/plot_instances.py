@@ -9,6 +9,8 @@ from matplotlib.patches import Polygon
 # Assuming 'data' is already loaded and contains a 'Row' column from which to extract the source
 data = pd.read_csv('data/coordinates.csv')
 data['Source'] = data['Row'].str.extract(r'_(\w+)$')
+# Make source title case and remove underscores
+data['Source'] = data['Source'].str.title().str.replace('_', ' ')
 
 # Load the bounds data
 bounds = pd.read_csv('data/bounds.csv')
@@ -34,6 +36,10 @@ new_inst_df = pd.read_csv(new_instances_path)
 for index, row in new_inst_df.iterrows():
     plt.scatter(row['z_1'], row['z_2'], marker='*', color='blue', s=100)
     plt.text(row['z_1'], row['z_2'], row['Source'], color='black', fontsize=9, ha='right', va='bottom')
+
+# plot a target point and mark it
+target_point = [2.5, 2.5]
+plt.scatter(target_point[0], target_point[1], marker='x', color='black', s=100)
 
 
 # Extract all x and y coordinates including data, target points, and boundary points
