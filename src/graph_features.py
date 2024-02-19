@@ -141,10 +141,6 @@ def count_minimal_odd_cycles(graph):
 
     return len(minimal_odd_cycles)
 
-
-# Calculate the number of cut vertices in the graph G
-
-
 def number_of_cut_vertices(G):
     """
     Calculate the number of cut vertices in the graph G.
@@ -176,3 +172,44 @@ def calculate_group_size(G):
     group_size = grpsize1 * (10**grpsize2)
 
     return group_size
+
+def build_feature_df(G, source):
+    
+    graph_features = get_graph_features(G)
+
+    # Map the features to the ISA metadata csv
+    mapped_features = {
+    'Source': source,
+    'feature_density': graph_features['density'],
+    'feature_radius': graph_features['radius'],
+    'feature_minimum_degree': graph_features['minimum_degree'],
+    'feature_algebraic_connectivity': graph_features['algebraic_connectivity'],
+    # 'feature_connected': graph_features['connected'],
+    'feature_number_of_cut_vertices': graph_features['number_of_cut_vertices'],
+    'feature_minimum_dominating_set': graph_features['minimum_dominating_set'],
+    'feature_diameter': graph_features['diameter'],
+    'feature_laplacian_second_largest_eigenvalue': graph_features['laplacian_second_largest_eigenvalue'],
+    # 'feature_number_of_components': graph_features['number_of_components'],
+    'feature_smallest_eigenvalue': graph_features['smallest_eigenvalue'],
+    'feature_regular': graph_features['regular'],
+    'feature_planar': graph_features['planar'],
+    'feature_bipartite': graph_features['bipartite'],
+    'feature_clique_number': graph_features['clique_number'],
+    'feature_eulerian': graph_features['eulerian'],
+    'feature_average_distance': graph_features['average_distance'],
+    'feature_edge_connectivity': graph_features['edge_connectivity'],
+    'feature_maximum_degree': graph_features['maximum_degree'],
+    'feature_vertex_connectivity': graph_features['vertex_connectivity'],
+    'feature_laplacian_largest_eigenvalue': graph_features['laplacian_largest_eigenvalue'],
+    'feature_number_of_orbits': graph_features['number_of_orbits'],
+    'feature_ratio_of_two_largest_laplacian_eigenvaleus': graph_features['ratio_of_two_largest_laplacian_eigenvaleus'],
+    'feature_group_size': graph_features['group_size'],
+    'feature_number_of_edges': graph_features['number_of_edges'],
+    'feature_number_of_minimal_odd_cycles': graph_features['number_of_minimal_odd_cycles'],
+    'algo_instance_class_optimsed': 0,
+    'algo_random_initialisation': 0,
+    'algo_three_regular_graph_optimised': 0,
+    'algo_tqa_initialisation': 0
+    }
+
+    return mapped_features
