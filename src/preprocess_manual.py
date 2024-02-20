@@ -112,8 +112,8 @@ def read_graphs_from_pickles(pickle_directory_path):
             file_path = os.path.join(pickle_directory_path, filename)
             # Read the graph from the pickle file
             graph = nx.read_gpickle(file_path)
-            # Add the graph to the list
-            graphs.append(graph)
+            # Add the graph to the list along with its name
+            graphs.append((graph, filename))
             print(f"Loaded graph from {filename} with {graph.number_of_nodes()} nodes and {graph.number_of_edges()} edges.")
     
     return graphs
@@ -133,7 +133,8 @@ def main():
     
     for i, inst in enumerate(graphs):
         # features = build_feature_df(inst, "GA-generated-instance")
-        features = build_feature_df(inst, "GA-generated-instance_" + str(i))
+        # graph name is filename without path and extension
+        features = build_feature_df(inst[0], inst[1])
         df = pd.concat([df, pd.DataFrame([features])], ignore_index=True)
     
     df = preprocess_features(df, min_vals)
