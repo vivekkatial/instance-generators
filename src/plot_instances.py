@@ -34,12 +34,17 @@ new_inst_df = pd.read_csv(new_instances_path)
 
 # Plot each point and annotate it
 for index, row in new_inst_df.iterrows():
-    plt.scatter(row['z_1'], row['z_2'], marker='*', color='blue', s=100)
+    plt.scatter(row['z_1'], row['z_2'], marker='*', color='blue', s=50, alpha=0.5)
     plt.text(row['z_1'], row['z_2'], row['Source'], color='black', fontsize=9, ha='right', va='bottom')
 
 # plot a target point and mark it
 target_point = [2.5, 2.5]
 plt.scatter(target_point[0], target_point[1], marker='x', color='black', s=100)
+
+# Plot over range of target points
+target_points = [[2.5, 2.5], [3.75, 0]]
+for point in target_points:
+    plt.scatter(point[0], point[1], marker='x', color='black', s=100)
 
 
 # Extract all x and y coordinates including data, target points, and boundary points

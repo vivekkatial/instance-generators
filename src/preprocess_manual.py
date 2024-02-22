@@ -74,6 +74,7 @@ def apply_preprocessing(X: np.ndarray, mat_contents: dict) -> np.ndarray:
         X[:, i] = stats.boxcox(X[:, i], lmbda=lambdaX[i])
     X = (X - muX) / sigmaX
 
+
     feat_indices = mat_contents["featsel"][0][0][0][0] - 1  # Adjust for Python indexing
     return X[:, feat_indices]
 
@@ -130,6 +131,8 @@ def main():
     min_vals = load_min_values('data/precomputed-min-vals.csv')
     df = pd.read_csv('data/metadata.csv', index_col=0, nrows=0)
     graphs = read_graphs_from_pickles('best_graphs/')
+
+    
     
     for i, inst in enumerate(graphs):
         # features = build_feature_df(inst, "GA-generated-instance")
@@ -137,10 +140,17 @@ def main():
         features = build_feature_df(inst[0], inst[1])
         df = pd.concat([df, pd.DataFrame([features])], ignore_index=True)
     
+    # If the graphs are planar graphs, we change the value of feature_number_of_edges to be 22
+    # df['feature_number_of_edges'] = 22
     df = preprocess_features(df, min_vals)
+    import pdb; pdb.set_trace()
+
+
+
+
     X = build_feature_matrix(df)
     print('-> Bounding outliers, scaling, and normalizing the data.')
-    
+
     mat_contents = scipy.io.loadmat('data/model.mat')
     X = apply_preprocessing(X, mat_contents)
     
