@@ -163,3 +163,4 @@ data/*
 *.pdf
 best_graphs/*
 planar_graphs/*
+save_graphs/

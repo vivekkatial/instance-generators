@@ -143,11 +143,6 @@ def main():
     # If the graphs are planar graphs, we change the value of feature_number_of_edges to be 22
     # df['feature_number_of_edges'] = 22
     df = preprocess_features(df, min_vals)
-    import pdb; pdb.set_trace()
-
-
-
-
     X = build_feature_matrix(df)
     print('-> Bounding outliers, scaling, and normalizing the data.')
 

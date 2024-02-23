@@ -75,11 +75,10 @@ class GraphInstance:
 
                     # Check first if edge has been removed or not
                     if removed_edge not in self.removed_edges:
-                        print(f"Removing edge ({u},{v})")
                         # Remove an edge
                         self.G.remove_edge(u, v)
                     else:
-                        print("Regenerating p")
+                        pass
 
                 # If 0.33 < p <= 0.66 we add an edge between a single partition
                 elif prob > 1 / 3 and prob <= 2 / 3:
@@ -98,7 +97,6 @@ class GraphInstance:
                         # Add in top partition
                         conn_nodes = random.sample(top_nodes, 2)
                         self.G.add_edge(conn_nodes[0], conn_nodes[1])
-                    print(f"Adding edge ({conn_nodes[0]},{conn_nodes[1]})")
                 else:
                     keep = True
 

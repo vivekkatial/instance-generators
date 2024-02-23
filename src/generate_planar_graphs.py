@@ -97,27 +97,8 @@ def generate_planar_graph_with_min_edges(nodes, min_edges):
                     if G.number_of_edges() >= min_edges:
                         return G
     
-    # Check if the graph has the required number of edges
-    if G.number_of_edges() < min_edges:
+    # Check if the graph has the required number of edges from the ISA
+    if G.number_of_edges() <= 22:
         raise ValueError(f"Failed to generate a planar graph with at least {min_edges} edges for {nodes} nodes. This graph has {G.number_of_edges()} edges.")
     
     return G
-
-# Parameters
-nodes = 12
-min_edges = 23
-
-# How do I evolve from initial population of graph with minimum 22 edge graphs
-
-try:
-    # Generate the graph
-    G = generate_planar_graph_with_min_edges(nodes, min_edges)
-
-    # Draw the graph
-    print(f"Planar Graph with {G.number_of_edges()} edges and {len(G.nodes())} nodes")
-    plt.figure(figsize=(8, 8))
-    nx.draw(G, with_labels=True, node_color='lightblue', edge_color='gray')
-    plt.title(f"Planar Graph with {G.number_of_edges()} edges and {len(G.nodes())} nodes")
-    plt.show()
-except ValueError as e:
-    print(e)
