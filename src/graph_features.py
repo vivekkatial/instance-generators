@@ -24,9 +24,9 @@ def get_graph_features(G):
     e = np.linalg.eigvals(L.A)
 
     features["acyclic"] = nx.is_directed_acyclic_graph(G)
-    features[
-        "algebraic_connectivity"
-    ] = nx.linalg.algebraicconnectivity.algebraic_connectivity(G, method="lanczos")
+    features["algebraic_connectivity"] = (
+        nx.linalg.algebraicconnectivity.algebraic_connectivity(G, method="lanczos")
+    )
     try:
         features["average_distance"] = nx.average_shortest_path_length(G)
     except:
@@ -48,9 +48,9 @@ def get_graph_features(G):
         features["diameter"] = nx.algorithms.distance_measures.diameter(G)
     else:
         features["diameter"] = 0
-    features[
-        "edge_connectivity"
-    ] = nx.algorithms.connectivity.connectivity.edge_connectivity(G)
+    features["edge_connectivity"] = (
+        nx.algorithms.connectivity.connectivity.edge_connectivity(G)
+    )
     features["eulerian"] = nx.algorithms.euler.is_eulerian(G)
     # features['Genus'] =
     # features['Girth'] =
@@ -65,9 +65,9 @@ def get_graph_features(G):
     features["maximum_degree"] = max([G.degree[i] for i in G.nodes])
     features["minimum_degree"] = min([G.degree[i] for i in G.nodes])
     features["minimum_dominating_set"] = len(nx.algorithms.dominating.dominating_set(G))
-    features[
-        "number_of_components"
-    ] = nx.algorithms.components.number_connected_components(G)
+    features["number_of_components"] = (
+        nx.algorithms.components.number_connected_components(G)
+    )
     features["number_of_edges"] = G.number_of_edges()
     # features['number_of_triangles'] = nx.algorithms.cluster.triangles(G)
     features["number_of_vertices"] = G.number_of_nodes()
@@ -84,9 +84,9 @@ def get_graph_features(G):
         max(e).real / sorted(e)[1].real
     )
     features["smallest_eigenvalue"] = min(e).real
-    features[
-        "vertex_connectivity"
-    ] = nx.algorithms.connectivity.connectivity.node_connectivity(G)
+    features["vertex_connectivity"] = (
+        nx.algorithms.connectivity.connectivity.node_connectivity(G)
+    )
 
     # Additional features based on (https://arxiv.org/pdf/2102.05997.pdf)
     # First we need to make a Nauty graph to leverage `pynauty`
@@ -141,6 +141,7 @@ def count_minimal_odd_cycles(graph):
 
     return len(minimal_odd_cycles)
 
+
 def number_of_cut_vertices(G):
     """
     Calculate the number of cut vertices in the graph G.
@@ -173,43 +174,52 @@ def calculate_group_size(G):
 
     return group_size
 
+
 def build_feature_df(G, source):
-    
+
     graph_features = get_graph_features(G)
 
     # Map the features to the ISA metadata csv
     mapped_features = {
-    'Source': source,
-    'feature_density': graph_features['density'],
-    'feature_radius': graph_features['radius'],
-    'feature_minimum_degree': graph_features['minimum_degree'],
-    'feature_algebraic_connectivity': graph_features['algebraic_connectivity'],
-    # 'feature_connected': graph_features['connected'],
-    'feature_number_of_cut_vertices': graph_features['number_of_cut_vertices'],
-    'feature_minimum_dominating_set': graph_features['minimum_dominating_set'],
-    'feature_diameter': graph_features['diameter'],
-    'feature_laplacian_second_largest_eigenvalue': graph_features['laplacian_second_largest_eigenvalue'],
-    # 'feature_number_of_components': graph_features['number_of_components'],
-    'feature_smallest_eigenvalue': graph_features['smallest_eigenvalue'],
-    'feature_regular': graph_features['regular'],
-    'feature_planar': graph_features['planar'],
-    'feature_bipartite': graph_features['bipartite'],
-    'feature_clique_number': graph_features['clique_number'],
-    'feature_eulerian': graph_features['eulerian'],
-    'feature_average_distance': graph_features['average_distance'],
-    'feature_edge_connectivity': graph_features['edge_connectivity'],
-    'feature_maximum_degree': graph_features['maximum_degree'],
-    'feature_vertex_connectivity': graph_features['vertex_connectivity'],
-    'feature_laplacian_largest_eigenvalue': graph_features['laplacian_largest_eigenvalue'],
-    'feature_number_of_orbits': graph_features['number_of_orbits'],
-    'feature_ratio_of_two_largest_laplacian_eigenvaleus': graph_features['ratio_of_two_largest_laplacian_eigenvaleus'],
-    'feature_group_size': graph_features['group_size'],
-    'feature_number_of_edges': graph_features['number_of_edges'],
-    'feature_number_of_minimal_odd_cycles': graph_features['number_of_minimal_odd_cycles'],
-    'algo_instance_class_optimsed': 0,
-    'algo_random_initialisation': 0,
-    'algo_three_regular_graph_optimised': 0,
-    'algo_tqa_initialisation': 0
+        'Source': source,
+        'feature_density': graph_features['density'],
+        'feature_radius': graph_features['radius'],
+        'feature_minimum_degree': graph_features['minimum_degree'],
+        'feature_algebraic_connectivity': graph_features['algebraic_connectivity'],
+        # 'feature_connected': graph_features['connected'],
+        'feature_number_of_cut_vertices': graph_features['number_of_cut_vertices'],
+        'feature_minimum_dominating_set': graph_features['minimum_dominating_set'],
+        'feature_diameter': graph_features['diameter'],
+        'feature_laplacian_second_largest_eigenvalue': graph_features[
+            'laplacian_second_largest_eigenvalue'
+        ],
+        # 'feature_number_of_components': graph_features['number_of_components'],
+        'feature_smallest_eigenvalue': graph_features['smallest_eigenvalue'],
+        'feature_regular': graph_features['regular'],
+        'feature_planar': graph_features['planar'],
+        'feature_bipartite': graph_features['bipartite'],
+        'feature_clique_number': graph_features['clique_number'],
+        'feature_eulerian': graph_features['eulerian'],
+        'feature_average_distance': graph_features['average_distance'],
+        'feature_edge_connectivity': graph_features['edge_connectivity'],
+        'feature_maximum_degree': graph_features['maximum_degree'],
+        'feature_vertex_connectivity': graph_features['vertex_connectivity'],
+        'feature_laplacian_largest_eigenvalue': graph_features[
+            'laplacian_largest_eigenvalue'
+        ],
+        'feature_number_of_orbits': graph_features['number_of_orbits'],
+        'feature_ratio_of_two_largest_laplacian_eigenvaleus': graph_features[
+            'ratio_of_two_largest_laplacian_eigenvaleus'
+        ],
+        'feature_group_size': graph_features['group_size'],
+        'feature_number_of_edges': graph_features['number_of_edges'],
+        'feature_number_of_minimal_odd_cycles': graph_features[
+            'number_of_minimal_odd_cycles'
+        ],
+        'algo_instance_class_optimsed': 0,
+        'algo_random_initialisation': 0,
+        'algo_three_regular_graph_optimised': 0,
+        'algo_tqa_initialisation': 0,
     }
 
     return mapped_features
