@@ -1,5 +1,6 @@
 import subprocess
 from concurrent.futures import ProcessPoolExecutor
+from targets import target_points
 
 # Define the paths to your scripts
 scripts = [
@@ -8,47 +9,10 @@ scripts = [
     'src/plot_instances.py'
 ]
 
-# Create grid of target points
-target_points = [
-    ['--target_point', '-10.0', '0.0'],
-    ['--target_point', '-10.0', '2.5'],
-    ['--target_point', '-7.5', '-2.5'],
-    ['--target_point', '-7.5', '0.0'],
-    ['--target_point', '-7.5', '2.5'],
-    ['--target_point', '-7.5', '5.0'],
-    ['--target_point', '-7.5', '7.5'],
-    ['--target_point', '-5.0', '-5.0'],
-    ['--target_point', '-5.0', '-2.5'],
-    ['--target_point', '-5.0', '0.0'],
-    ['--target_point', '-5.0', '2.5'],
-    ['--target_point', '-5.0', '5.0'],
-    ['--target_point', '-5.0', '7.5'],
-    ['--target_point', '-2.5', '-7.5'],
-    ['--target_point', '-2.5', '-5.0'],
-    ['--target_point', '0.0', '-7.5'],
-    ['--target_point', '0.0', '7.5'],
-    ['--target_point', '2.5', '-7.5'],
-    ['--target_point', '2.5', '-5.0'],
-    ['--target_point', '2.5', '0.0'],
-    ['--target_point', '2.5', '2.5'],
-    ['--target_point', '2.5', '7.5'],
-    ['--target_point', '5.0', '-7.5'],
-    ['--target_point', '5.0', '2.5'],
-    ['--target_point', '5.0', '5.0'],
-    ['--target_point', '7.5', '-7.5'],
-    ['--target_point', '7.5', '-5.0'],
-    ['--target_point', '7.5', '-2.5'],
-    ['--target_point', '7.5', '0.0'],
-    ['--target_point', '7.5', '2.5'],
-    ['--target_point', '8.0', '-5.0'],
-    ['--target_point', '9.0', '-2.5'],
-    ['--target_point', '9.0', '0.0']
-]
-
 # Define a function to execute all scripts sequentially for a given target_point
 def run_scripts_sequentially(target_point):
     for script in scripts:
-        subprocess.run(['poetry', 'run', 'python', script] + target_point, check=True)
+        subprocess.run(['poetry', 'run', 'python', script, '--target_point'] + target_point, check=True)
 
 # Use ProcessPoolExecutor to parallelize the execution across target_points
 def main():
@@ -65,7 +29,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
 

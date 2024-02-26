@@ -146,12 +146,23 @@ def main():
         default=[2.5, 2.5],
         help="The target point for the fitness function.",
     )
+
+    # Add bool argument for best graphs
+    parser.add_argument(
+        "--best_graphs",
+        type=bool,
+        default=False,
+        help="Whether to use best graphs or not.",
+    )
+
     args = parser.parse_args()
     target_point = args.target_point
-    # Collapse the arguments into a string
-    load_path = os.path.join(
-        "target-point-graphs", f"target_point_{target_point[0]}_{target_point[1]}"
-    )
+    best_graphs = args.best_graphs
+    
+    if best_graphs:
+        load_path = "best_graphs/"
+    else:
+        load_path = os.path.join("target-point-graphs", f"target_point_{target_point[0]}_{target_point[1]}")
 
     min_vals = load_min_values('data/precomputed-min-vals.csv')
     df = pd.read_csv('data/metadata.csv', index_col=0, nrows=0)

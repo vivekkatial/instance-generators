@@ -286,7 +286,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--population_size",
         type=int,
-        default=20,
+        default=40,
         help="The size of the population for the genetic algorithm.",
     )
     parser.add_argument(
@@ -298,7 +298,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--generations",
         type=int,
-        default=100,
+        default=200,
         help="The number of generations for the genetic algorithm.",
     )
     parser.add_argument(
@@ -316,7 +316,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--elite_size",
         type=int,
-        default=2,
+        default=6,
         help="The number of elites to keep in the population.",
     )
     parser.add_argument(
