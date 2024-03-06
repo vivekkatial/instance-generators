@@ -46,10 +46,10 @@ def initialise_population(
                 G = nx.powerlaw_cluster_graph(number_of_nodes, m, p)
 
             elif graph_type == 'powerlaw_tree':
-                G = nx.random_powerlaw_tree(number_of_nodes, tries=1000)
+                G = nx.random_powerlaw_tree(number_of_nodes, tries=10000)
                 while G.number_of_edges() < min_edges:
                     G = nx.random_powerlaw_tree(
-                        number_of_nodes, gamma=3, seed=None, tries=1000
+                        number_of_nodes, gamma=3, seed=None, tries=10000
                     )
 
             elif graph_type == 'nearly_complete_bipartite':
@@ -59,6 +59,12 @@ def initialise_population(
                 G = GraphInstance(G_temp, "Nearly Complete BiPartite")
                 G.nearly_complete()
                 G = G.G
+            
+            elif graph_type == 'three_regular_graph':
+                G = nx.random_regular_graph(3, number_of_nodes)
+
+            elif graph_type == "four_regular_graph":
+                G = nx.random_regular_graph(4, number_of_nodes)
 
             elif graph_type == 'geometric':
                 connected = False
@@ -214,9 +220,15 @@ def structured_graph_crossover(
             for j in range(i + 1, number_of_nodes)
             if not offspring.has_edge(i, j)
         ]
-        if potential_edges:
+
+        add_or_remove = random.choice([True, False])
+
+        if add_or_remove and potential_edges:
             edge = random.choice(potential_edges)
             offspring.add_edge(*edge)
+        elif not add_or_remove and offspring.number_of_edges() > min_edges:
+            edge = random.choice(list(offspring.edges()))
+            offspring.remove_edge(*edge)
 
     # Ensure the offspring meets the minimum edge requirement
     while offspring.number_of_edges() < min_edges:
@@ -292,25 +304,25 @@ if __name__ == "__main__":
     parser.add_argument(
         "--number_of_nodes",
         type=int,
-        default=12,
+        default=50,
         help="The number of nodes for the graphs in the population.",
     )
     parser.add_argument(
         "--generations",
         type=int,
-        default=200,
+        default=10000,
         help="The number of generations for the genetic algorithm.",
     )
     parser.add_argument(
         "--mutation_rate",
         type=float,
-        default=0.1,
+        default=0.05,
         help="The mutation rate for the genetic algorithm.",
     )
     parser.add_argument(
         "--immigration_rate",
         type=float,
-        default=0.1,
+        default=0.05,
         help="The immigration rate for the genetic algorithm.",
     )
     parser.add_argument(
@@ -351,11 +363,13 @@ if __name__ == "__main__":
         'powerlaw_tree',
         'nearly_complete_bipartite',
         'geometric',
+        'three_regular_graph',
+        'four_regular_graph',
     ]
 
     # Make save path based on target-point
     save_path = os.path.join(
-        "target-point-graphs", f"target_point_{target_point[0]}_{target_point[1]}"
+        "target-point-graphs", f"target_point_{target_point[0]}_{target_point[1]}_n_{number_of_nodes}"
     )
 
     print('=========================================================================')
@@ -445,12 +459,19 @@ if __name__ == "__main__":
         # Find the best graph in the selected population
         best_graph_index = np.argmin(updated_fitness_scores)
         best_graph = selected_population[best_graph_index]
+        
+        if gen >= 200:
+            best_fitnesses_last_200 = best_fitnesses[-200:]
+            best_fitnesses_last_200_min = np.min(best_fitnesses_last_200)
+            best_fitnesses_last_200_max = np.max(best_fitnesses_last_200)
+            # If the difference is less than 0.01% of the best fitness, stop and store results
+            if best_fitnesses_last_200_max - best_fitnesses_last_200_min < 0.0001 * best_fitnesses_last_200_max:
+                print("Stopping criterion met: Best fitness has not improved by more than 0.1% in the last 200 generations.")
+                path = os.path.join(save_path, f"best_graph_gen_{gen+1}.pkl")
+                with open(path, 'wb') as file:
+                    pickle.dump(best_graph, file)
+                break  # Stops the loop
 
-        # Only save the first and last generation graphs
-        if gen == generations - 1:
-            path = os.path.join(save_path, f"best_graph_gen_{gen+1}.pkl")
-            with open(path, 'wb') as file:
-                pickle.dump(best_graph, file)
 
     # Save performance metrics
     performance_metrics = {

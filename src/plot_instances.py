@@ -27,7 +27,7 @@ target_point = args.target_point
 
 # Load new instances based on target point
 load_path = os.path.join(
-        "target-point-graphs", f"target_point_{target_point[0]}_{target_point[1]}"
+        "target-point-graphs", f"target_point_{target_point[0]}_{target_point[1]}_n_24"
     )
 
 new_instances_path = os.path.join(load_path, 'new-instance-coordinates.csv')
@@ -40,7 +40,7 @@ data['Source'] = data['Row'].str.extract(r'_(\w+)$')
 data['Source'] = data['Source'].str.title().str.replace('_', ' ')
 
 # Load the bounds data
-bounds = pd.read_csv('data/bounds.csv')
+bounds = pd.read_csv('data/bounds_prunned.csv')
 
 # Set the aesthetic style of the plots
 sns.set_style("whitegrid")
@@ -163,7 +163,7 @@ nx.draw(G, pos, with_labels=True, font_weight='bold')
 plt.savefig(f"{save_path}/evolved_network_plot.png", bbox_inches="tight")
 
 # Save graph features to file
-with open('graph_features.json', 'w') as f:
+with open(f"{save_path}/graph_features.json", 'w') as f:
     json.dump(features, f, indent=4)
 
 

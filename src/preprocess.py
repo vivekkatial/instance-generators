@@ -149,7 +149,30 @@ def main():
 
     # Add bool argument for best graphs
     parser.add_argument(
-        "--best_graphs",
+        "--best_graphs_n_12",
+        type=bool,
+        default=False,
+        help="Whether to use best graphs or not.",
+    )
+
+    # Add bool argument for best graphs
+    parser.add_argument(
+        "--best_graphs_n_16",
+        type=bool,
+        default=False,
+        help="Whether to use best graphs or not.",
+    )
+
+    # Add bool argument for best graphs n_24
+    parser.add_argument(
+        "--best_graphs_n_24",
+        type=bool,
+        default=False,
+        help="Whether to use best graphs or not.",
+    )
+
+    parser.add_argument(
+        "--best_graphs_n_50",
         type=bool,
         default=False,
         help="Whether to use best graphs or not.",
@@ -157,12 +180,25 @@ def main():
 
     args = parser.parse_args()
     target_point = args.target_point
-    best_graphs = args.best_graphs
+    best_graphs_n_12 = args.best_graphs_n_12
+    best_graphs_n_16 = args.best_graphs_n_16
+    best_graphs_n_24 = args.best_graphs_n_24
+    best_graphs_n_50 = args.best_graphs_n_50
+
+    # Only one of the three options can be True
+    if sum([best_graphs_n_12, best_graphs_n_16, best_graphs_n_24, best_graphs_n_50]) > 1:
+        raise ValueError("Only one of the three options can be True")
     
-    if best_graphs:
-        load_path = "best_graphs/"
+    if best_graphs_n_12:
+        load_path = "best_graphs_12/"
+    elif best_graphs_n_16:
+        load_path = "best_graphs_16/"
+    elif best_graphs_n_24:
+        load_path = "best_graphs_24/"
+    elif best_graphs_n_50:
+        load_path = "best_graphs_50/"
     else:
-        load_path = os.path.join("target-point-graphs", f"target_point_{target_point[0]}_{target_point[1]}")
+        load_path = os.path.join("target-point-graphs", f"target_point_{target_point[0]}_{target_point[1]}__n_24")
 
     min_vals = load_min_values('data/precomputed-min-vals.csv')
     df = pd.read_csv('data/metadata.csv', index_col=0, nrows=0)

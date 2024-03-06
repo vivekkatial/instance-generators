@@ -161,7 +161,7 @@ cython_debug/
 .DS_Store
 data/*
 *.pdf
-best_graphs/*
+best_graphs*
 planar_graphs/*
 save_graphs/
 target-point-graphs/*
