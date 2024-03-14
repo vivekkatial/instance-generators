@@ -164,4 +164,6 @@ data/*
 best_graphs*
 planar_graphs/*
 save_graphs/
-target-point-graphs/*
+target-point-graphs/*final_population_n_12/*
+final_population_n_12/
+target-point-graphs/

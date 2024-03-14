@@ -178,12 +178,20 @@ def main():
         help="Whether to use best graphs or not.",
     )
 
+    parser.add_argument(
+        "--final_n_12",
+        type=bool,
+        default=False,
+        help="Whether to use best graphs or not.",
+    )
+
     args = parser.parse_args()
     target_point = args.target_point
     best_graphs_n_12 = args.best_graphs_n_12
     best_graphs_n_16 = args.best_graphs_n_16
     best_graphs_n_24 = args.best_graphs_n_24
     best_graphs_n_50 = args.best_graphs_n_50
+    final_n_12 = args.final_n_12
 
     # Only one of the three options can be True
     if sum([best_graphs_n_12, best_graphs_n_16, best_graphs_n_24, best_graphs_n_50]) > 1:
@@ -197,6 +205,8 @@ def main():
         load_path = "best_graphs_24/"
     elif best_graphs_n_50:
         load_path = "best_graphs_50/"
+    elif final_n_12:
+        load_path = "final_population_n_12/"
     else:
         load_path = os.path.join("target-point-graphs", f"target_point_{target_point[0]}_{target_point[1]}__n_24")
 
