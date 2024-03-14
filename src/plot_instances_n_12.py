@@ -130,7 +130,6 @@ def main():
     print(f"Number of evolved instances: {new_instances.shape[0]}")
     print(f"Number of original instances: {data.shape[0]}")
     
-    
 
 
 
@@ -142,6 +141,8 @@ def main():
 
     # Write the plot to a file
     plt.savefig('evolved_instances_n_12.png')
+    # Save evolved instances to a file
+    new_instances.to_csv('data/final_evolved_instances_n_12.csv', index=False)
 
 if __name__ == "__main__":
     main()
