@@ -9,6 +9,7 @@ from targets import target_points
 def load_and_prepare_instance_data(filepath, source_name, gen_pattern):
     df = pd.read_csv(filepath)
     df['Generation'] = df['Source'].str.extract(gen_pattern).astype(int)
+    df['Filename'] = df['Source']
     df['Source'] = source_name
     df['Population Type'] = source_name
     return df
@@ -141,7 +142,7 @@ def main():
 
     # Write the plot to a file
     plt.savefig('evolved_instances_n_12.png')
-    # Save evolved instances to a file
+    # Save evolved instances to a filen
     new_instances.to_csv('data/final_evolved_instances_n_12.csv', index=False)
 
 if __name__ == "__main__":

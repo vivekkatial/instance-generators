@@ -213,6 +213,8 @@ def main():
     min_vals = load_min_values('data/precomputed-min-vals.csv')
     df = pd.read_csv('data/metadata.csv', index_col=0, nrows=0)
     graphs = read_graphs_from_pickles(load_path)
+    # Get each graphs filename
+    filenames = [inst[1] for inst in graphs]
 
     for i, inst in enumerate(graphs):
         features = build_feature_df(inst[0], inst[1])
@@ -235,6 +237,7 @@ def main():
     new_inst_file = load_path + "/new-instance-coordinates.csv"
     new_instance_projections.to_csv(new_inst_file, index=False)
     print(new_instance_projections)
+
 
 
 if __name__ == "__main__":
