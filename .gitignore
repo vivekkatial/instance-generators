@@ -168,3 +168,4 @@ target-point-graphs/*final_population_n_12/*
 final_population_n_12/
 target-point-graphs/
 qaoa-param-inform-pub/
+qaoa-param-evolved/
