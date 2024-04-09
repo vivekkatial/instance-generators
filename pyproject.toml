@@ -29,3 +29,6 @@ tensorflow = "^2.16.1"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[[tool.poetry.packages]]
+include = "src"

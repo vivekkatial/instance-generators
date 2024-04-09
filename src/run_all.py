@@ -1,11 +1,13 @@
 import subprocess
 import os
 from concurrent.futures import ProcessPoolExecutor
-from targets import target_points
+from src.data.targets_evolved import target_points
+
+EXPERIMENT='qaoa-param-evolved'
 
 # Define the paths to your scripts
 scripts = [
-    'src/genetic_algorithm.py',
+    'src/algorithm/ga.py',
     'src/preprocess.py',
     'src/plot_instances.py'
 ]
@@ -15,7 +17,7 @@ def check_existing_directories(target_point):
     # Convert the float coordinates in target_point to strings
     str_target_point = list(map(str, target_point))
     # Create the directory name for the target_point
-    directory_name = f"target-point-graphs/target_point_{str_target_point[0]}_{str_target_point[1]}_n_50"
+    directory_name = f"{EXPERIMENT}/target-point-graphs/target_point_{str_target_point[0]}_{str_target_point[1]}_n_14"
     # Check if graph_features.json exists in the directory
     return os.path.exists(os.path.join(directory_name, 'graph_features.json'))
 
@@ -29,7 +31,7 @@ def run_scripts_sequentially(target_point):
 
 # Use ProcessPoolExecutor to parallelize the execution across target_points
 def main(target_points):
-    # Set max_workers to the number of available cores less two
+    # Set max_workers to the number of available cores less four
     max_workers = os.cpu_count() - 2
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
         # Only run for target_points that do not have a directory yet

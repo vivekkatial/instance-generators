@@ -9,20 +9,20 @@ import argparse
 from scipy import stats
 
 # Custom imports (assuming these modules are defined elsewhere in your project)
-from graph_features import build_feature_df
-from graph_instance import create_graphs_from_all_sources, GraphInstance
+from src.graph_features import build_feature_df
+from src.graph_instance import create_graphs_from_all_sources, GraphInstance
 
 
-def check_files_exist():
+def check_files_exist(experiment="data"):
     """Check if the necessary files exist."""
     try:
-        with open('data/metadata.csv') as f:
+        with open(f'{experiment}/metadata.csv') as f:
             pass
-        with open('data/precomputed-min-vals.csv') as f:
+        with open(f'{experiment}/precomputed-min-vals.csv') as f:
             pass
-        with open('data/model.mat') as f:
+        with open(f'{experiment}/model.mat') as f:
             pass
-        with open('data/projection_matrix.csv') as f:
+        with open(f'{experiment}/projection_matrix.csv') as f:
             pass
     except FileNotFoundError:
         return False
@@ -65,7 +65,9 @@ def preprocess_features(df: pd.DataFrame, min_vals: dict) -> pd.DataFrame:
 
 def build_feature_matrix(df: pd.DataFrame) -> np.ndarray:
     """Extract feature matrix from the DataFrame."""
-    return df.iloc[:, 1:25].values
+    # Select columns that start with feature
+    df = df.filter(regex='feature')
+    return df.values
 
 
 def apply_preprocessing(X: np.ndarray, mat_contents: dict) -> np.ndarray:
@@ -94,21 +96,31 @@ def project_features(X: np.ndarray, projection_matrix_file: str) -> pd.DataFrame
     return pd.DataFrame(z_coor, columns=['z_1', 'z_2'])
 
 
-def get_z1_z2_projection(graph):
+def get_z1_z2_projection(graph, **kwargs):
     """Get the Z1, Z2 projection of a single graph."""
+
+    # Check if experiment exists in kwargs as a param
+    if "experiment" in kwargs:
+        experiment = kwargs["experiment"]
+    else:
+        experiment = "data"
+
+
     # Custom function to get the Z1, Z2 projection of an arbitrary graph
     ignore_warnings()
-    check_files_exist()
+    check_files_exist(experiment=experiment)
 
-    min_vals = load_min_values('data/precomputed-min-vals.csv')
-    df = pd.read_csv('data/metadata.csv', index_col=0, nrows=0)
+    # Check if precomputed_min needed
+    min_vals = load_min_values(f"{experiment}/precomputed-min-vals.csv")
+        
+    df = pd.read_csv(f'{experiment}/metadata.csv', index_col=0, nrows=0)
     features = build_feature_df(graph, "generated-instance")
     df = pd.concat([df, pd.DataFrame([features])], ignore_index=True)
     df = preprocess_features(df, min_vals)
     X = build_feature_matrix(df)
-    mat_contents = scipy.io.loadmat('data/model.mat')
+    mat_contents = scipy.io.loadmat(f'{experiment}/model.mat')
     X = apply_preprocessing(X, mat_contents)
-    new_instance_projections = project_features(X, 'data/projection_matrix.csv')
+    new_instance_projections = project_features(X, f'{experiment}/projection_matrix.csv')
     return new_instance_projections.iloc[0, :].values
 
 
@@ -185,13 +197,29 @@ def main():
         help="Whether to use best graphs or not.",
     )
 
+    parser.add_argument(
+        "--experiment",
+        type=str,
+        default='qaoa-param-evolved',
+        help="The name of the experiment being conducted.",
+    )
+
+    parser.add_argument(
+        "--node_size",
+        type=int,
+        default=None,
+        help="The size of the nodes in the graph.",
+    )
+
     args = parser.parse_args()
     target_point = args.target_point
     best_graphs_n_12 = args.best_graphs_n_12
     best_graphs_n_16 = args.best_graphs_n_16
     best_graphs_n_24 = args.best_graphs_n_24
     best_graphs_n_50 = args.best_graphs_n_50
+    node_size = args.node_size
     final_n_12 = args.final_n_12
+    experiment = args.experiment
 
     # Only one of the three options can be True
     if sum([best_graphs_n_12, best_graphs_n_16, best_graphs_n_24, best_graphs_n_50]) > 1:
@@ -207,11 +235,14 @@ def main():
         load_path = "best_graphs_50/"
     elif final_n_12:
         load_path = "final_population_n_12/"
+    elif node_size is not None and experiment is not None:
+        load_path = os.path.join(experiment, f"best_graphs_{node_size}")
     else:
-        load_path = os.path.join("target-point-graphs", f"target_point_{target_point[0]}_{target_point[1]}__n_24")
+        load_path = os.path.join(experiment, "target-point-graphs", f"target_point_{target_point[0]}_{target_point[1]}_n_14")
 
-    min_vals = load_min_values('data/precomputed-min-vals.csv')
-    df = pd.read_csv('data/metadata.csv', index_col=0, nrows=0)
+
+    min_vals = load_min_values(f'{experiment}/precomputed-min-vals.csv')
+    df = pd.read_csv(f'{experiment}/metadata.csv', index_col=0, nrows=0)
     graphs = read_graphs_from_pickles(load_path)
     # Get each graphs filename
     filenames = [inst[1] for inst in graphs]
@@ -225,10 +256,10 @@ def main():
     X = build_feature_matrix(df)
     print('-> Bounding outliers, scaling, and normalizing the data.')
 
-    mat_contents = scipy.io.loadmat('data/model.mat')
+    mat_contents = scipy.io.loadmat(f'{experiment}/model.mat')
     X = apply_preprocessing(X, mat_contents)
 
-    new_instance_projections = project_features(X, 'data/projection_matrix.csv')
+    new_instance_projections = project_features(X, f'{experiment}/projection_matrix.csv')
     new_instance_projections['Source'] = df['Source']
 
     # Remove NaNs

@@ -3,7 +3,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import os
 from matplotlib.patches import Polygon
-from targets import target_points
+from src.data.targets_evolved import target_points
 
 def load_and_prepare_instance_data(filepath, source_name, gen_pattern):
     df = pd.read_csv(filepath)
@@ -17,25 +17,27 @@ def main():
     print('-> Plotting Instances.')
     print('=========================================================================')
 
+    experiment = 'qaoa-param-evolved'
+
     paths_and_sources = [
-        (os.path.join('best_graphs_12', 'new-instance-coordinates.csv'), 'Evolved Population (n=12)', r'_(\d+)\.pkl$'),
-        (os.path.join('best_graphs_16', 'new-instance-coordinates.csv'), 'Evolved Population (n=16)', r'_(\d+)\.pkl$'),
-        (os.path.join('best_graphs_24', 'new-instance-coordinates.csv'), 'Evolved Population (n=24)', r'_(\d+)\.pkl$'),
-        (os.path.join('best_graphs_50', 'new-instance-coordinates.csv'), 'Evolved Population (n=50)', r'_(\d+)\.pkl$')
+        (os.path.join(experiment, 'best_graphs_12', 'new-instance-coordinates.csv'), 'Evolved Population (n=12)', r'_(\d+)\.pkl$'),
+        (os.path.join(experiment, 'best_graphs_14', 'new-instance-coordinates.csv'), 'Evolved Population (n=14)', r'_(\d+)\.pkl$'),
+        # (os.path.join('best_graphs_24', 'new-instance-coordinates.csv'), 'Evolved Population (n=24)', r'_(\d+)\.pkl$'),
+        # (os.path.join('best_graphs_50', 'new-instance-coordinates.csv'), 'Evolved Population (n=50)', r'_(\d+)\.pkl$')
     ]
 
     # Load and prepare all instance data
     new_instances = pd.concat([load_and_prepare_instance_data(path, source, pattern) for path, source, pattern in paths_and_sources])
 
     # Load the original data and bounds
-    data = pd.read_csv('data/coordinates.csv')
+    data = pd.read_csv(f'{experiment}/coordinates.csv')
     # data['Source'] = data['Row'].str.extract(r'_(\w+)$').str.title().str.replace('_', ' ')
     data['Source'] = data['Row'].str.extract(r'_(\w+)$')
     # Make source title case and remove underscores
     data['Source'] = data['Source'].str.title().str.replace('_', ' ')
     data['Population Type'] = 'Original Instances'
     # Load the bounds data
-    bounds = pd.read_csv('data/bounds_prunned.csv')
+    bounds = pd.read_csv(f'{experiment}/bounds_prunned.csv')
 
     # Set plot aesthetics
     sns.set(style="whitegrid", context="paper")
@@ -51,7 +53,7 @@ def main():
     colors = {
         "Original Instances": "grey",
         "Evolved Population (n=12)": "brown",
-        "Evolved Population (n=16)": "navy",
+        "Evolved Population (n=14)": "navy",
         "Evolved Population (n=24)": "green",
         "Evolved Population (n=50)": "purple"
 
@@ -59,7 +61,7 @@ def main():
     markers = {
         "Original Instances": "o",  # Circle
         "Evolved Population (n=12)": "D",  # Diamond
-        "Evolved Population (n=16)": "D",  # Diamond
+        "Evolved Population (n=14)": "D",  # Diamond
         "Evolved Population (n=24)": "D",  # Diamond
         "Evolved Population (n=50)": "D"  # Diamond
     }
@@ -76,8 +78,8 @@ def main():
     result_df = result_df.iloc[1:]
 
     # Plot the target point
-    # for target_point in target_points:
-    #     plt.scatter(target_point[0], target_point[1], marker='x', color='black', s=60)
+    for target_point in target_points:
+        plt.scatter(target_point[0], target_point[1], marker='x', color='black', s=60)
 
     # Plot each group with its respective color and marker
     for population_type, group_df in result_df.groupby('Population Type'):
@@ -107,7 +109,7 @@ def main():
     plt.grid(True)
 
     # Write the plot to a file
-    plt.savefig('evolved_instances_no_targ.png')
+    plt.savefig('evolved_instances_no_targ_evolved.png')
 
 if __name__ == "__main__":
     main()

@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # Base directory for the operation, assumed to be the root directory you're working from
-base_dir="."
+base_dir="qaoa-param-evolved"
 
 # Target directory containing the subdirectories
 target_dir="${base_dir}/target-point-graphs"
 
 # Ensure the base directory for best graphs exists in the root
-mkdir -p "${base_dir}/best_graphs_12"
+mkdir -p "${base_dir}/best_graphs_14"
 
 # Iterate over each subdirectory in target-point-graphs
 for dir in ${target_dir}/target_point_*; do

@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import os
 from matplotlib.patches import Polygon
 from tqdm import tqdm
-from targets import target_points
+from src.data.targets_evolved import target_points
 
 def load_and_prepare_instance_data(filepath, source_name, gen_pattern):
     df = pd.read_csv(filepath)
@@ -31,12 +31,14 @@ def is_close_to_any_other_point(row, df, tolerance=0.1):
     return False
 
 def main():
+    experiment = 'qaoa-param-evolved'
+
     print('=========================================================================')
-    print('-> Plotting Instances.')
+    print(f'-> Plotting Instances from {experiment}.')
     print('=========================================================================')
 
     paths_and_sources = [
-        (os.path.join('final_population_n_12', 'new-instance-coordinates.csv'), 'Evolved Population (n=12)', r'_(\d+)\.pkl$'),
+        (os.path.join('final_population_n_12', 'new-instance-coordinates.csv'), 'Evolved Population (n=12)', r'_(\d+)\.pkl$'), 
     ]
 
     # Load and prepare all instance data
@@ -47,7 +49,7 @@ def main():
     # Remove overlapping instances
     new_instances = new_instances.drop_duplicates(subset=['z_1', 'z_2'])
 
-    # Log total number of instances removed from overlap
+    # # Log total number of instances removed from overlap
     print(f"Number of instances removed from overlap: {total_instances - new_instances.shape[0]}")
 
     tqdm.pandas(desc=f"Checking points {new_instances.shape[0]} instances for proximity to other points")
@@ -60,14 +62,14 @@ def main():
 
 
     # Load the original data and bounds
-    data = pd.read_csv('data/coordinates.csv')
+    data = pd.read_csv(f'{experiment}/coordinates.csv')
     # data['Source'] = data['Row'].str.extract(r'_(\w+)$').str.title().str.replace('_', ' ')
     data['Source'] = data['Row'].str.extract(r'_(\w+)$')
     # Make source title case and remove underscores
     data['Source'] = data['Source'].str.title().str.replace('_', ' ')
     data['Population Type'] = 'Original Instances'
     # Load the bounds data
-    bounds = pd.read_csv('data/bounds_prunned.csv')
+    bounds = pd.read_csv(f'{experiment}/bounds_prunned.csv')
 
     # Set plot aesthetics
     sns.set(style="whitegrid", context="paper")
@@ -143,7 +145,7 @@ def main():
     # Write the plot to a file
     plt.savefig('evolved_instances_n_12.png')
     # Save evolved instances to a filen
-    new_instances.to_csv('data/final_evolved_instances_n_12.csv', index=False)
+    new_instances.to_csv(f'{experiment}/final_evolved_instances_n_12.csv', index=False)
 
 if __name__ == "__main__":
     main()

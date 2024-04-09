@@ -22,25 +22,36 @@ parser.add_argument(
     default=[2.5, 2.5],
     help="The target point for the fitness function.",
 )
+
+parser.add_argument(
+    "--experiment",
+    type=str,
+    nargs=1,
+    default="qaoa-param-evolved",
+    help="The expeirment.",
+)
+
+
 args = parser.parse_args()
 target_point = args.target_point
+experiment = args.experiment
 
 # Load new instances based on target point
 load_path = os.path.join(
-        "target-point-graphs", f"target_point_{target_point[0]}_{target_point[1]}_n_24"
+        experiment,"target-point-graphs", f"target_point_{target_point[0]}_{target_point[1]}_n_12"
     )
 
 new_instances_path = os.path.join(load_path, 'new-instance-coordinates.csv')
 
 # Custom imports from the project
 # Assuming 'data' is already loaded and contains a 'Row' column from which to extract the source
-data = pd.read_csv('data/coordinates.csv')
+data = pd.read_csv(f'{experiment}/coordinates.csv')
 data['Source'] = data['Row'].str.extract(r'_(\w+)$')
 # Make source title case and remove underscores
 data['Source'] = data['Source'].str.title().str.replace('_', ' ')
 
 # Load the bounds data
-bounds = pd.read_csv('data/bounds_prunned.csv')
+bounds = pd.read_csv(f'{experiment}/bounds_prunned.csv')
 
 # Set the aesthetic style of the plots
 sns.set_style("whitegrid")
@@ -133,20 +144,15 @@ plt.legend(title='Source', bbox_to_anchor=(1.05, 1), loc='upper left')
 # Tight layout for saving without cutting off labels
 plt.tight_layout()
 
-# Make save path based on target-point
-save_path = os.path.join(
-    "target-point-graphs", f"target_point_{target_point[0]}_{target_point[1]}"
-)
-
 # Save the figure to target point folder
-plt.savefig(f"{save_path}/scatter_plot.png", bbox_inches="tight")
+plt.savefig(f"{load_path}/scatter_plot.png", bbox_inches="tight")
 
 print('=========================================================================')
 print('-> Plotting Network for Evolved Instance.')
 print('=========================================================================')
 
 # Load the best graph from the final generation
-G = nx.read_gpickle(f"{save_path}/best_graph_gen_{new_inst_df['Generation'].max()}.pkl")
+G = nx.read_gpickle(f"{load_path}/best_graph_gen_{new_inst_df['Generation'].max()}.pkl")
 
 features = get_graph_features(G)
 print(json.dumps(features, indent=4))
@@ -160,14 +166,14 @@ plt.clf()
 plt.figure(figsize=(10, 6))
 nx.draw(G, pos, with_labels=True, font_weight='bold')
 # Save the figure to target point folder
-plt.savefig(f"{save_path}/evolved_network_plot.png", bbox_inches="tight")
+plt.savefig(f"{load_path}/evolved_network_plot.png", bbox_inches="tight")
 
 # Save graph features to file
-with open(f"{save_path}/graph_features.json", 'w') as f:
+with open(f"{load_path}/graph_features.json", 'w') as f:
     json.dump(features, f, indent=4)
 
 
 
 print('=========================================================================')
-print(f'-> Completed GA Evolution -- check the results in the {save_path} folder.')
+print(f'-> Completed GA Evolution -- check the results in the {load_path} folder.')
 print('=========================================================================')
