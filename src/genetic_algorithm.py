@@ -401,7 +401,7 @@ if __name__ == "__main__":
     # Save the best graph in the initial population
     best_graph_index = np.argmin(fitness_scores)
     best_graph = initial_population[best_graph_index]
-    path = os.path.join(save_path, "best_graph_gen_0.pkl")
+    path = os.path.join(save_path, "best_graph_gen_0.graphml")
     with open(path, 'wb') as file:
         pickle.dump(best_graph, file)
 
@@ -467,7 +467,7 @@ if __name__ == "__main__":
             # If the difference is less than 0.01% of the best fitness, stop and store results
             if best_fitnesses_last_200_max - best_fitnesses_last_200_min < 0.0001 * best_fitnesses_last_200_max:
                 print("Stopping criterion met: Best fitness has not improved by more than 0.1% in the last 200 generations.")
-                path = os.path.join(save_path, f"best_graph_gen_{gen+1}.pkl")
+                path = os.path.join(save_path, f"best_graph_gen_{gen+1}.graphml")
                 with open(path, 'wb') as file:
                     pickle.dump(best_graph, file)
                 break  # Stops the loop
@@ -526,6 +526,6 @@ if __name__ == "__main__":
 
     # Save all the graphs in the final population
     for i, graph in enumerate(selected_population):
-        path = os.path.join(save_path, f"final_population_graph_{i}.pkl")
+        path = os.path.join(save_path, f"final_population_graph_{i}.graphml")
         with open(path, 'wb') as file:
             pickle.dump(graph, file)

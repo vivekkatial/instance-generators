@@ -56,7 +56,10 @@ def preprocess_features(df: pd.DataFrame, min_vals: dict) -> pd.DataFrame:
         if df[col].dtype == bool:
             df[col] = df[col].astype(int)
 
-    # Adjust numeric columns with min_vals
+    # Adjust numeric columns with min_vals (only if they exist)
+    if min_vals is None:
+        return df
+    
     numeric_cols = df.select_dtypes(include=[np.number]).columns
     for col in numeric_cols:
         df[col] = df[col] + abs(min_vals.get(col, 0))
@@ -110,9 +113,12 @@ def get_z1_z2_projection(graph, **kwargs):
     ignore_warnings()
     check_files_exist(experiment=experiment)
 
-    # Check if precomputed_min needed
-    min_vals = load_min_values(f"{experiment}/precomputed-min-vals.csv")
-        
+    # Check if precomputed_min needed (only if the file exists)
+    if os.path.exists(f"{experiment}/precomputed-min-vals.csv"):
+        min_vals = load_min_values(f"{experiment}/precomputed-min-vals.csv")
+    else:
+        min_vals = None
+
     df = pd.read_csv(f'{experiment}/metadata.csv', index_col=0, nrows=0)
     features = build_feature_df(graph, "generated-instance")
     df = pd.concat([df, pd.DataFrame([features])], ignore_index=True)
@@ -130,11 +136,11 @@ def read_graphs_from_pickles(pickle_directory_path):
 
     # List all files in the given directory
     for filename in os.listdir(pickle_directory_path):
-        if filename.endswith(".pkl"):
+        if filename.endswith(".graphml"):
             # Construct full file path
             file_path = os.path.join(pickle_directory_path, filename)
-            # Read the graph from the pickle file
-            graph = nx.read_gpickle(file_path)
+            # Read the graph from the graphml
+            graph = nx.read_graphml(file_path)
             # Add the graph to the list along with its name
             graphs.append((graph, filename))
 
@@ -200,7 +206,7 @@ def main():
     parser.add_argument(
         "--experiment",
         type=str,
-        default='qaoa-param-evolved',
+        default='INFORMS-Revision-12-node-network',
         help="The name of the experiment being conducted.",
     )
 
@@ -238,10 +244,13 @@ def main():
     elif node_size is not None and experiment is not None:
         load_path = os.path.join(experiment, f"best_graphs_{node_size}")
     else:
-        load_path = os.path.join(experiment, "target-point-graphs", f"target_point_{target_point[0]}_{target_point[1]}_n_14")
+        load_path = os.path.join(experiment, "target-point-graphs", f"target_point_{target_point[0]}_{target_point[1]}_n_12")
 
-
-    min_vals = load_min_values(f'{experiment}/precomputed-min-vals.csv')
+    # Check if precomputed_min needed (only if the file exists)
+    if os.path.exists(f'{experiment}/precomputed-min-vals.csv'):
+        min_vals = load_min_values(f'{experiment}/precomputed-min-vals.csv')
+    else:
+        min_vals = None
     df = pd.read_csv(f'{experiment}/metadata.csv', index_col=0, nrows=0)
     graphs = read_graphs_from_pickles(load_path)
     # Get each graphs filename

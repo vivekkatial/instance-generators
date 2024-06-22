@@ -38,7 +38,7 @@ def main():
     print('=========================================================================')
 
     paths_and_sources = [
-        (os.path.join('final_population_n_12', 'new-instance-coordinates.csv'), 'Evolved Population (n=12)', r'_(\d+)\.pkl$'), 
+        (os.path.join('final_population_n_12', 'new-instance-coordinates.csv'), 'Evolved Population (n=12)', r'_(\d+)\.graphml$'), 
     ]
 
     # Load and prepare all instance data

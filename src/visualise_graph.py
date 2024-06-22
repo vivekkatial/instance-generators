@@ -10,7 +10,7 @@ parser.add_argument(
     '--graph',
     type=str,
     help='Path to the graph file',
-    default='runs-to-keep/best_graph_50.pkl',
+    default='runs-to-keep/best_graph_50.graphml',
 )
 
 args = parser.parse_args()

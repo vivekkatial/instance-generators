@@ -10,8 +10,8 @@ else
     echo "Directory final_population_n_12 already exists."
 fi
 
-# Step 2: Copy .pkl files from directories not ending in "n_{integer}" and append the directory name to the copied files
-echo "Processing directories and copying .pkl files..."
+# Step 2: Copy .graphml files from directories not ending in "n_{integer}" and append the directory name to the copied files
+echo "Processing directories and copying .graphml files..."
 for dir in target-point-graphs/target_point_*; do
     # Skip directories ending with "n_{integer}"
     if [[ ! $dir =~ n_([0-9]+)$ ]]; then
@@ -22,8 +22,8 @@ for dir in target-point-graphs/target_point_*; do
         # Initialize a counter for copied files
         copied_files_count=0
 
-        # Copy and rename .pkl files
-        for file in "$dir"/*.pkl; do
+        # Copy and rename .graphml files
+        for file in "$dir"/*.graphml; do
             if [ -f "$file" ]; then
                 file_name=$(basename "$file")
                 # Append directory name to the file name, excluding extension, and copy to the final_population_n_12 directory
@@ -33,9 +33,9 @@ for dir in target-point-graphs/target_point_*; do
         done
 
         if [ $copied_files_count -gt 0 ]; then
-            echo "Copied $copied_files_count .pkl files from $dir_name to final_population_n_12."
+            echo "Copied $copied_files_count .graphml files from $dir_name to final_population_n_12."
         else
-            echo "No .pkl files found in $dir_name to copy."
+            echo "No .graphml files found in $dir_name to copy."
         fi
     fi
 done

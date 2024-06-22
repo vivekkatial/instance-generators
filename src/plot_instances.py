@@ -27,31 +27,32 @@ parser.add_argument(
     "--experiment",
     type=str,
     nargs=1,
-    default="qaoa-param-evolved",
-    help="The expeirment.",
+    default="INFORMS-Revision-12-node-network",
+    help="The experiment.",
 )
 
 
 args = parser.parse_args()
 target_point = args.target_point
-experiment = args.experiment
+experiment = args.experiment[0]
+experiment = "INFOCOM-Revision-12-node-network"
 
 # Load new instances based on target point
-load_path = os.path.join(
-        experiment,"target-point-graphs", f"target_point_{target_point[0]}_{target_point[1]}_n_12"
-    )
+load_path = os.path.join(experiment,"target-point-graphs", f"target_point_{target_point[0]}_{target_point[1]}_n_12")
 
 new_instances_path = os.path.join(load_path, 'new-instance-coordinates.csv')
 
 # Custom imports from the project
 # Assuming 'data' is already loaded and contains a 'Row' column from which to extract the source
-data = pd.read_csv(f'{experiment}/coordinates.csv')
-data['Source'] = data['Row'].str.extract(r'_(\w+)$')
-# Make source title case and remove underscores
-data['Source'] = data['Source'].str.title().str.replace('_', ' ')
+d_coords = pd.read_csv(f'{experiment}/coordinates.csv')
+d_source = pd.read_csv(f'{experiment}/metadata.csv')
+# Select only the `Instances` and `Source` columns only and then join the Source column to the coordinates (with Row = Instances)
+data = d_coords[['Row', 'z_1', 'z_2']].merge(d_source[['Instances', 'Source']], left_on='Row', right_on='Instances')
+# Dont keep the `Instances` column
+data.drop(columns='Instances', inplace=True)
 
 # Load the bounds data
-bounds = pd.read_csv(f'{experiment}/bounds_prunned.csv')
+bounds = pd.read_csv(f'{experiment}/bounds_prunned-0.9.csv')
 
 # Set the aesthetic style of the plots
 sns.set_style("whitegrid")
@@ -72,13 +73,17 @@ plt.gca().add_patch(polygon)
 plt.scatter(target_point[0], target_point[1], marker='x', color='black', s=100)
 
 # New projections
+# Check if the new instances file exists
+if not os.path.exists(new_instances_path):
+    print(f'No new instances found at {new_instances_path}. Exiting...')
 
-new_inst_df = pd.read_csv(new_instances_path)
-# Extract generation number based on the file name `best_graph_{gen}.pkl`
-new_inst_df['Generation'] = (
-    new_inst_df['Source'].str.extract(r'_(\d+)\.pkl$').astype(int)
-)
+else:
 
+    new_inst_df = pd.read_csv(new_instances_path)
+    # Extract generation number based on the file name `best_graph_{gen}.graphml`
+    new_inst_df['Generation'] = (
+        new_inst_df['Source'].str.extract(r'_(\d+)\.graphml$').astype(int)
+    )
 
 # Filter new instances to include the final population (source contains `final_population`)
 final_population = new_inst_df[new_inst_df['Source'].str.contains('final_population')]
@@ -152,7 +157,7 @@ print('-> Plotting Network for Evolved Instance.')
 print('=========================================================================')
 
 # Load the best graph from the final generation
-G = nx.read_gpickle(f"{load_path}/best_graph_gen_{new_inst_df['Generation'].max()}.pkl")
+G = nx.read_gpickle(f"{load_path}/best_graph_gen_{new_inst_df['Generation'].max()}.graphml")
 
 features = get_graph_features(G)
 print(json.dumps(features, indent=4))

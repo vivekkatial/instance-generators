@@ -30,12 +30,12 @@ for dir in ${target_dir}/target_point_*; do
     best_graph_file=""
 
     # Iterate over files in the current directory
-    for file in ${dir}/best_graph_gen_*.pkl; do
+    for file in ${dir}/best_graph_gen_*.graphml; do
         # Extract the filename from the path
         filename=$(basename "$file")
         # Extract gen value from file name using parameter expansion
         file_gen="${filename#best_graph_gen_}"
-        file_gen="${file_gen%.pkl}"
+        file_gen="${file_gen%.graphml}"
 
         # Only proceed if file_gen is a number
         if [[ $file_gen =~ ^[0-9]+$ ]]; then
@@ -50,7 +50,7 @@ for dir in ${target_dir}/target_point_*; do
     # Copy the file with the highest gen to the target directory in the root
     if [ -n "$best_graph_file" ]; then
         # Append the target_point to the destination filename
-        destination_file="${base_dir}/best_graphs_${node_size}/${target_point}_best_graph_gen_${highest_gen}.pkl"
+        destination_file="${base_dir}/best_graphs_${node_size}/${target_point}_best_graph_gen_${highest_gen}.graphml"
         cp "$best_graph_file" "$destination_file"
     fi
 done

@@ -3,7 +3,7 @@ import os
 from concurrent.futures import ProcessPoolExecutor
 from src.data.targets_evolved import target_points
 
-EXPERIMENT='qaoa-param-evolved'
+EXPERIMENT='INFORMS-Revision-12-node-network'
 
 # Define the paths to your scripts
 scripts = [
@@ -35,14 +35,19 @@ def main(target_points):
     max_workers = os.cpu_count() - 2
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
         # Only run for target_points that do not have a directory yet
-        # target_points = [target_point for target_point in target_points if not check_existing_directories(target_point)]
+        target_points_to_process = [target_point for target_point in target_points if not check_existing_directories(target_point)]
+        # Print the target_points that will be processed
+        print(f"Processing {len(target_points_to_process)} target points: {target_points_to_process}")
+        # Count the number of target_points that already have a directory
+        existing_targets = len(target_points) - len(target_points_to_process)
+        print(f"{existing_targets} target points already have a directory.")
         # Submit a task for each target_point to run all scripts sequentially for that target_point
-        futures = [executor.submit(run_scripts_sequentially, target_point) for target_point in target_points]
+        futures = [executor.submit(run_scripts_sequentially, target_point) for target_point in target_points_to_process]
         
         # Wait for all futures to complete (optional, if you need to process results)
         for future in futures:
             try:
-                future.result()  # This will re-raise any exception that occurred during the execution
+                future.result() 
             except Exception as e:
                 print(f"An error occurred: {e}")
 

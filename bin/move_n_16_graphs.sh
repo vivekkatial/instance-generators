@@ -14,7 +14,7 @@ find "$src_dir" -type d -regex ".*/target_point_.*_n_16" | while read dir; do
     # Extract the target_point part from the directory path for use in the new filename
     target_point=$(basename "$dir")
     # Inside each directory, look for pkl files containing 'final_population' in their names
-    find "$dir" -type f -name "*final_population*.pkl" | while read file; do
+    find "$dir" -type f -name "*final_population*.graphml" | while read file; do
         # Construct new filename with target_point preserved
         new_filename="${dest_dir}/${target_point}_$(basename "$file")"
         # Copy each found file to the destination directory with the new filename

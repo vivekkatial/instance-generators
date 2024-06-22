@@ -2,7 +2,6 @@ import networkx as nx
 import random
 import numpy as np
 import os
-import pickle
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -33,55 +32,94 @@ def initialise_population(
 
     for graph_type in graph_types:
         for i in range(population_size):
-            if graph_type == 'planar':
-                edges_to_generate = random.randint(min_edges, 3 * number_of_nodes - 6)
-                G = generate_planar_graph_with_min_edges(
-                    number_of_nodes, edges_to_generate
-                )
+            while True:
+                if graph_type == 'planar':
+                    edges_to_generate = random.randint(min_edges, 3 * number_of_nodes - 6)
+                    G = generate_planar_graph_with_min_edges(number_of_nodes, edges_to_generate)
 
-            elif graph_type == 'erdos_renyi':
-                p = 0.5  # Probability of edge creation
-                G = nx.erdos_renyi_graph(number_of_nodes, p)
+                elif graph_type == 'erdos_renyi':
+                    p = 0.5  # Probability of edge creation
+                    G = nx.erdos_renyi_graph(number_of_nodes, p)
 
-            elif graph_type == 'powerlaw_cluster':
-                m = 3  # Number of random edges to add for each new node
-                p = 0.5  # Probability of adding a triangle after adding a random edge
-                G = nx.powerlaw_cluster_graph(number_of_nodes, m, p)
+                elif graph_type == 'powerlaw_cluster':
+                    m = 3  # Number of random edges to add for each new node
+                    p = 0.5  # Probability of adding a triangle after adding a random edge
+                    G = nx.powerlaw_cluster_graph(number_of_nodes, m, p)
 
-            elif graph_type == 'powerlaw_tree':
-                G = nx.random_powerlaw_tree(number_of_nodes, tries=10000)
-                while G.number_of_edges() < min_edges:
-                    G = nx.random_powerlaw_tree(
-                        number_of_nodes, gamma=3, seed=None, tries=10000
-                    )
+                elif graph_type == 'powerlaw_tree':
+                    G = nx.random_powerlaw_tree(number_of_nodes, tries=10000)
+                    if G.number_of_edges() < min_edges:
+                        continue
 
-            elif graph_type == 'nearly_complete_bipartite':
-                n_part_1 = random.randint(1, number_of_nodes - 1)
-                n_part_2 = number_of_nodes - n_part_1
-                G_temp = nx.complete_bipartite_graph(n_part_1, n_part_2)
-                G = GraphInstance(G_temp, "Nearly Complete BiPartite")
-                G.nearly_complete()
-                G = G.G
-            
-            elif graph_type == 'three_regular_graph':
-                G = nx.random_regular_graph(3, number_of_nodes)
+                elif graph_type == 'nearly_complete_bipartite':
+                    n_part_1 = random.randint(1, number_of_nodes - 1)
+                    n_part_2 = number_of_nodes - n_part_1
+                    G_temp = nx.complete_bipartite_graph(n_part_1, n_part_2)
+                    G = GraphInstance(G_temp, "Nearly Complete BiPartite")
+                    G.nearly_complete()
+                    G = G.G
 
-            elif graph_type == "four_regular_graph":
-                G = nx.random_regular_graph(4, number_of_nodes)
+                elif graph_type == 'three_regular_graph':
+                    G = nx.random_regular_graph(3, number_of_nodes)
 
-            elif graph_type == 'geometric':
-                connected = False
-                geom_guess = 0
-                while connected is False:
-                    geom_guess += 1
-                    # Use a radius that is connected 95% of the time
+                elif graph_type == "four_regular_graph":
+                    G = nx.random_regular_graph(4, number_of_nodes)
+
+                elif graph_type == 'geometric':
                     random_radius = random.uniform(0.24, 1)
                     G = nx.random_geometric_graph(number_of_nodes, radius=random_radius)
-                    connected = nx.algorithms.components.is_connected(G)
+
+                if nx.is_connected(G) and G.number_of_edges() >= min_edges:
+                    break
 
             # Check if the generated graph meets the minimum edges criteria before adding
             if G.number_of_edges() >= min_edges:
                 population.append((G, graph_type))
+
+            # Apply a weight to each graph type based on the number of graphs of that type
+            weight_types = ['cauchy', 'exponential', 'log-normal', 'normal', 'uniform', 'uniform_plus']
+
+            # Randomly select one of those weight_types
+            weight_type = random.choice(weight_types)
+
+            # Assign normalized random weights to all edges in the graph based on the specified weight type, unless weight_type is None.
+            if weight_type is not None:
+                if weight_type == 'uniform':
+                    weights = [random.uniform(0, 1) for _ in G.edges()]
+                elif weight_type == 'uniform_plus':
+                    weights = [random.uniform(-1, 1) for _ in G.edges()]
+                elif weight_type == 'normal':
+                    weights = [random.normalvariate(0, 1) for _ in G.edges()]
+                elif weight_type == 'exponential':
+                    weights = [random.expovariate(0.2) for _ in G.edges()]
+                elif weight_type == 'log-normal':
+                    weights = [random.lognormvariate(0, 1) for _ in G.edges()]
+                elif weight_type == 'cauchy':
+                    weights = [np.random.standard_cauchy() for _ in G.edges()]
+                else:
+                    weights = [1 for _ in G.edges()]
+                    print("No valid weight type specified; assigning all weights as 1.")
+
+                # Normalize weights to the range [0, 1]
+                min_weight = min(weights)
+                max_weight = max(weights)
+                if max_weight != min_weight:
+                    normalized_weights = [(w - min_weight) / (max_weight - min_weight) for w in weights]
+                else:
+                    normalized_weights = [0.5 for _ in weights]  # Default to middle if all weights are the same
+
+                # Assign normalized weights to each edge
+                for (u, v), weight in zip(G.edges(), normalized_weights):
+                    G[u][v]['weight'] = weight
+
+            # Check if the graph is connected
+            if not nx.is_connected(G):
+                print(f"Graph is not connected: {graph_type}")
+                print(f"Number of nodes: {G.number_of_nodes()}")
+                print(f"Number of edges: {G.number_of_edges()}")
+                print(f"Minimum edges: {min_edges}")
+                print(f"Edges: {G.edges()}")
+                raise ValueError("Graph is not connected")
 
     # Ensure the population does not exceed the desired population size after adding all types
     population = random.sample(population, min(population_size, len(population)))
@@ -98,10 +136,13 @@ def initialise_population(
     return population
 
 
-def fitness_function(graph, target_point):
+def fitness_function(graph, target_point, experiment):
     """Fitness function for the genetic algorithm."""
     # Get the Z1, Z2 projection of the graph
-    z1_z2_projection = get_z1_z2_projection(graph, experiment="qaoa-param-evolved")
+    z1_z2_projection = get_z1_z2_projection(graph, experiment=experiment)
+    # If (nan, nan) is returned, raise an error
+    if np.isnan(z1_z2_projection).all():
+        raise ValueError("Projection returned NaN values")
     # Calculate the distance from the target point
     distance = np.linalg.norm(z1_z2_projection - target_point)
     return distance
@@ -301,13 +342,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--population_size",
         type=int,
-        default=40,
+        default=20,
         help="The size of the population for the genetic algorithm.",
     )
     parser.add_argument(
         "--number_of_nodes",
         type=int,
-        default=14,
+        default=12,
         help="The number of nodes for the graphs in the population.",
     )
     parser.add_argument(
@@ -352,7 +393,7 @@ if __name__ == "__main__":
         "--experiment",
         type=str,
         nargs=1,
-        default="qaoa-param-evolved",
+        default="INFORMS-Revision-12-node-network",
         help="The QAOA expeirment.",
     )
 
@@ -386,6 +427,7 @@ if __name__ == "__main__":
         "target-point-graphs", 
         f"target_point_{target_point[0]}_{target_point[1]}_n_{number_of_nodes}"
     )
+    
 
     print('=========================================================================')
     print('-> Kicking off Genetic Algorithm.')
@@ -402,7 +444,7 @@ if __name__ == "__main__":
     )
 
     fitness_scores = [
-        fitness_function(graph, target_point) for graph in initial_population
+        fitness_function(graph, target_point, experiment=experiment) for graph in initial_population
     ]
     avg_fitness = np.mean(fitness_scores)
     best_fitness = np.min(fitness_scores)
@@ -416,9 +458,8 @@ if __name__ == "__main__":
     # Save the best graph in the initial population
     best_graph_index = np.argmin(fitness_scores)
     best_graph = initial_population[best_graph_index]
-    path = os.path.join(save_path, "best_graph_gen_0.pkl")
-    with open(path, 'wb') as file:
-        pickle.dump(best_graph, file)
+    path = os.path.join(save_path, "best_graph_gen_0.graphml")
+    nx.write_graphml(best_graph, path)
 
     # Integrate elitism: Select top-performing individuals (elites) and rest of the population for breeding
     selected_population = elitist_selection(
@@ -451,7 +492,7 @@ if __name__ == "__main__":
         # Combine and select the new population
         combined_population = immigrated_population + selected_population[:elite_size]
         fitness_scores = [
-            fitness_function(graph, target_point) for graph in combined_population
+            fitness_function(graph, target_point, experiment=experiment) for graph in combined_population
         ]
         selected_population = elitist_selection(
             combined_population,
@@ -461,7 +502,7 @@ if __name__ == "__main__":
 
         # Re-evaluate fitness scores for the selected population to ensure alignment
         updated_fitness_scores = [
-            fitness_function(graph, target_point) for graph in selected_population
+            fitness_function(graph, target_point, experiment=experiment) for graph in selected_population
         ]
 
         # Update metrics based on the updated fitness scores
@@ -478,24 +519,22 @@ if __name__ == "__main__":
         best_graph_index = np.argmin(updated_fitness_scores)
         best_graph = selected_population[best_graph_index]
         
-        if gen >= 200:
-            best_fitnesses_last_200 = best_fitnesses[-200:]
-            best_fitnesses_last_200_min = np.min(best_fitnesses_last_200)
-            best_fitnesses_last_200_max = np.max(best_fitnesses_last_200)
+        if gen >= 300:
+            best_fitnesses_last_300 = best_fitnesses[-300:]
+            best_fitnesses_last_300_min = np.min(best_fitnesses_last_300)
+            best_fitnesses_last_300_max = np.max(best_fitnesses_last_300)
             # If the difference is less than 0.01% of the best fitness, stop and store results
-            if best_fitnesses_last_200_max - best_fitnesses_last_200_min < 0.0001 * best_fitnesses_last_200_max:
-                print("Stopping criterion met: Best fitness has not improved by more than 0.1% in the last 200 generations.")
+            if best_fitnesses_last_300_max - best_fitnesses_last_300_min < 0.0001 * best_fitnesses_last_300_max:
+                print("Stopping criterion met: Best fitness has not improved by more than 0.1% in the last 300 generations.")
                 stop_criterion_met = True
-                path = os.path.join(save_path, f"best_graph_gen_{gen+1}.pkl")
-                with open(path, 'wb') as file:
-                    pickle.dump(best_graph, file)
+                path = os.path.join(save_path, f"best_graph_gen_{gen+1}.graphml")
+                nx.write_graphml(best_graph, path)
                 break  # Stops the loop
     
     # If stopping criterion not met, save the best graph in the final population
     if not stop_criterion_met:
-        path = os.path.join(save_path, f"best_graph_gen_{generations}.pkl")
-        with open(path, 'wb') as file:
-            pickle.dump(best_graph, file)
+        path = os.path.join(save_path, f"best_graph_gen_{generations}.graphml")
+        nx.write_graphml(best_graph, path)
 
     # Save performance metrics
     performance_metrics = {
@@ -550,6 +589,5 @@ if __name__ == "__main__":
 
     # Save all the graphs in the final population
     for i, graph in enumerate(selected_population):
-        path = os.path.join(save_path, f"final_population_graph_{i}.pkl")
-        with open(path, 'wb') as file:
-            pickle.dump(graph, file)
+        path = os.path.join(save_path, f"final_population_graph_{i}.graphml")
+        nx.write_graphml(graph, path)

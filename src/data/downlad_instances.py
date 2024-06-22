@@ -37,11 +37,11 @@ missing_instances = []
 for index, row in filtered_instances.iterrows():
     run_id = row['Run ID']
     instance_class = row['instance_class']
-    artifact_path = "graph_instance.pkl"  # Assuming this is the name of the artifact
+    artifact_path = "graph_instance.graphml"  # Assuming this is the name of the artifact
 
     # Constructing the artifact's full path in MLflow
     artifact_full_path = os.path.join("runs:", run_id, artifact_path)
-    download_file_path = os.path.join("data/instances", f"{run_id}_{instance_class}.pkl")
+    download_file_path = os.path.join("data/instances", f"{run_id}_{instance_class}.graphml")
 
     try:
         # Check if the file already exists
