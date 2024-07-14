@@ -35,7 +35,7 @@ parser.add_argument(
 args = parser.parse_args()
 target_point = args.target_point
 experiment = args.experiment[0]
-experiment = "INFOCOM-Revision-12-node-network"
+experiment = "INFORMS-Revision-12-node-network"
 
 # Load new instances based on target point
 load_path = os.path.join(experiment,"target-point-graphs", f"target_point_{target_point[0]}_{target_point[1]}_n_12")
@@ -157,7 +157,7 @@ print('-> Plotting Network for Evolved Instance.')
 print('=========================================================================')
 
 # Load the best graph from the final generation
-G = nx.read_gpickle(f"{load_path}/best_graph_gen_{new_inst_df['Generation'].max()}.graphml")
+G = nx.read_graphml(f"{load_path}/best_graph_gen_{new_inst_df['Generation'].max()}.graphml")
 
 features = get_graph_features(G)
 print(json.dumps(features, indent=4))

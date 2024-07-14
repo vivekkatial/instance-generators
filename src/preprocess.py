@@ -130,19 +130,31 @@ def get_z1_z2_projection(graph, **kwargs):
     return new_instance_projections.iloc[0, :].values
 
 
-def read_graphs_from_pickles(pickle_directory_path):
+def read_graphs_from_graphml(graphml_directory_path):
     # List to store the graphs
     graphs = []
 
+    graphs_missing = 0
     # List all files in the given directory
-    for filename in os.listdir(pickle_directory_path):
+    for filename in os.listdir(graphml_directory_path):
         if filename.endswith(".graphml"):
-            # Construct full file path
-            file_path = os.path.join(pickle_directory_path, filename)
-            # Read the graph from the graphml
-            graph = nx.read_graphml(file_path)
-            # Add the graph to the list along with its name
-            graphs.append((graph, filename))
+            try:
+                # Construct full file path
+                file_path = os.path.join(graphml_directory_path, filename)
+                # Read the graph from the graphml
+                graph = nx.read_graphml(file_path)
+                # Add the graph to the list along with its name
+                graphs.append((graph, filename))
+            except Exception as e:
+                print(f"Error reading {filename}: {e}")
+                graphs_missing += 1
+                # Delete that target point directory
+                os.remove(file_path)
+                
+    if graphs_missing > 0:
+        print(f"Warning: {graphs_missing} graphs could not be read.")
+                
+
 
     return graphs
 
@@ -176,6 +188,14 @@ def main():
     # Add bool argument for best graphs
     parser.add_argument(
         "--best_graphs_n_16",
+        type=bool,
+        default=False,
+        help="Whether to use best graphs or not.",
+    )
+
+    # Add bool argument for best graphs
+    parser.add_argument(
+        "--best_graphs_n_20",
         type=bool,
         default=False,
         help="Whether to use best graphs or not.",
@@ -217,12 +237,21 @@ def main():
         help="The size of the nodes in the graph.",
     )
 
+    parser.add_argument(
+        "--all_instances",
+        type=bool,
+        default=False,
+        help="Whether to use all instances or not.",
+    )
+
     args = parser.parse_args()
     target_point = args.target_point
     best_graphs_n_12 = args.best_graphs_n_12
     best_graphs_n_16 = args.best_graphs_n_16
+    best_graphs_n_20 = args.best_graphs_n_20
     best_graphs_n_24 = args.best_graphs_n_24
     best_graphs_n_50 = args.best_graphs_n_50
+    all_instances = args.all_instances
     node_size = args.node_size
     final_n_12 = args.final_n_12
     experiment = args.experiment
@@ -235,14 +264,18 @@ def main():
         load_path = "best_graphs_12/"
     elif best_graphs_n_16:
         load_path = "best_graphs_16/"
+    elif best_graphs_n_20:
+        load_path = "best_graphs_20/"
     elif best_graphs_n_24:
         load_path = "best_graphs_24/"
     elif best_graphs_n_50:
         load_path = "best_graphs_50/"
     elif final_n_12:
         load_path = "final_population_n_12/"
-    elif node_size is not None and experiment is not None:
+    elif node_size is not None and experiment is not None and not all_instances:
         load_path = os.path.join(experiment, f"best_graphs_{node_size}")
+    elif node_size is not None and experiment is not None and all_instances:
+        load_path = os.path.join(experiment, f"all-evolved-instances")
     else:
         load_path = os.path.join(experiment, "target-point-graphs", f"target_point_{target_point[0]}_{target_point[1]}_n_12")
 
@@ -252,7 +285,7 @@ def main():
     else:
         min_vals = None
     df = pd.read_csv(f'{experiment}/metadata.csv', index_col=0, nrows=0)
-    graphs = read_graphs_from_pickles(load_path)
+    graphs = read_graphs_from_graphml(load_path)
     # Get each graphs filename
     filenames = [inst[1] for inst in graphs]
 

@@ -14,7 +14,7 @@ def load_and_prepare_instance_data(filepath, source_name, gen_pattern):
     df['Population Type'] = source_name
     return df
 
-def is_close_to_any_other_point(row, df, tolerance=0.1):
+def is_close_to_any_other_point(row, df, tolerance=0.01):
     """
     Check if the given row's z_1 and z_2 values are within +/- tolerance of any other point in the DataFrame.
 
@@ -31,14 +31,14 @@ def is_close_to_any_other_point(row, df, tolerance=0.1):
     return False
 
 def main():
-    experiment = 'qaoa-param-evolved'
+    experiment = 'INFORMS-Revision-12-node-network'
 
     print('=========================================================================')
     print(f'-> Plotting Instances from {experiment}.')
     print('=========================================================================')
 
     paths_and_sources = [
-        (os.path.join('final_population_n_12', 'new-instance-coordinates.csv'), 'Evolved Population (n=12)', r'_(\d+)\.graphml$'), 
+        (os.path.join(experiment,'all-evolved-instances', 'new-instance-coordinates.csv'), 'Evolved Population (n=12)', r'_(\d+)\.graphml$'), 
     ]
 
     # Load and prepare all instance data
@@ -58,7 +58,7 @@ def main():
     new_instances = new_instances[~new_instances['close_to_other_point']]
 
     # Log total number of instances removed from overlap and proximity
-    print(f"Number of instances removed from overlap: {total_instances - new_instances.shape[0]}")
+    print(f"Number of instances removed from proximity and overlap: {total_instances - new_instances.shape[0]}")
 
 
     # Load the original data and bounds
@@ -69,7 +69,7 @@ def main():
     data['Source'] = data['Source'].str.title().str.replace('_', ' ')
     data['Population Type'] = 'Original Instances'
     # Load the bounds data
-    bounds = pd.read_csv(f'{experiment}/bounds_prunned.csv')
+    bounds = pd.read_csv(f'{experiment}/bounds.csv')
 
     # Set plot aesthetics
     sns.set(style="whitegrid", context="paper")
@@ -103,9 +103,6 @@ def main():
     result_df = result_df.sort_values(by='z_1', ascending=True)
     result_df = result_df.iloc[1:]
 
-
-
-
     # Plot each group with its respective color and marker
     for population_type, group_df in result_df.groupby('Population Type'):
         # If the population type is 'Original Instances', alpha is 0.3, else 1
@@ -118,12 +115,12 @@ def main():
     
     # Plot the target point
     for target_point in target_points:
-        plt.scatter(target_point[0], target_point[1], marker='x', color='black', s=60)
+        plt.scatter(target_point[0], target_point[1], marker='x', color='black', s=10, alpha=.9)
 
 
     # Plot boundary
-    boundary_points = bounds[['z_1', 'z_2']].values
-    plt.gca().add_patch(Polygon(boundary_points, closed=True, fill=False, edgecolor='r', linewidth=2))
+    # boundary_points = bounds[['z_1', 'z_2']].values
+    # plt.gca().add_patch(Polygon(boundary_points, closed=True, fill=False, edgecolor='r', linewidth=2))
 
 
     # Set plot aesthetics

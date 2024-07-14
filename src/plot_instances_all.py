@@ -18,17 +18,17 @@ def main():
     print('=========================================================================')
 
     experiment = 'INFORMS-Revision-12-node-network'
-    new_instances_path = os.path.join(experiment, 'new-instance-coordinates.csv')
+    # new_instances_path = os.path.join(experiment, 'new-instance-coordinates.csv')
 
-    # paths_and_sources = [
-    #     (os.path.join(experiment, 'best_graphs_12', 'new-instance-coordinates.csv'), 'Evolved Population (n=12)', r'_(\d+)\.graphml$'),
-    #     (os.path.join(experiment, 'best_graphs_14', 'new-instance-coordinates.csv'), 'Evolved Population (n=14)', r'_(\d+)\.graphml$'),
-    #     # (os.path.join('best_graphs_24', 'new-instance-coordinates.csv'), 'Evolved Population (n=24)', r'_(\d+)\.graphml$'),
-    #     # (os.path.join('best_graphs_50', 'new-instance-coordinates.csv'), 'Evolved Population (n=50)', r'_(\d+)\.graphml$')
-    # ]
+    paths_and_sources = [
+        (os.path.join(experiment, 'best_graphs_12', 'new-instance-coordinates.csv'), 'Evolved Population (n=12)', r'_(\d+)\.graphml$'),
+        (os.path.join(experiment, 'best_graphs_20', 'new-instance-coordinates.csv'), 'Evolved Population (n=20)', r'_(\d+)\.graphml$'),
+        # (os.path.join('best_graphs_24', 'new-instance-coordinates.csv'), 'Evolved Population (n=24)', r'_(\d+)\.graphml$'),
+        # (os.path.join('best_graphs_50', 'new-instance-coordinates.csv'), 'Evolved Population (n=50)', r'_(\d+)\.graphml$')
+    ]
 
     # # Load and prepare all instance data
-    # new_instances = pd.concat([load_and_prepare_instance_data(path, source, pattern) for path, source, pattern in paths_and_sources])
+    new_instances = pd.concat([load_and_prepare_instance_data(path, source, pattern) for path, source, pattern in paths_and_sources])
 
     # Load the original data and bounds
     # Assuming 'data' is already loaded and contains a 'Row' column from which to extract the source
@@ -52,33 +52,13 @@ def main():
     boundary_points = bounds[['z_1', 'z_2']].values
     # plt.gca().add_patch(Polygon(boundary_points, closed=True, fill=False, edgecolor='r', linewidth=2))
 
-    # Check if the new instances file exists
-    if not os.path.exists(new_instances_path):
-        print(f'No new instances found at {new_instances_path}. Plotting source dist...')
-        # Create a scatter plot colored by the extracted source
-        scatter = sns.scatterplot(
-            data=data, x='z_1', y='z_2', hue='Source', palette='deep', alpha=0.5, s=50
-        )
-
-        for target_point in target_points:
-            plt.scatter(target_point[0], target_point[1], marker='x', color='black', s=60)
-
-
-        # Extract the boundary points and plot the polygon
-        boundary_points = bounds[['z_1', 'z_2']].values
-        polygon = Polygon(boundary_points, closed=True, fill=False, edgecolor='r', linewidth=2)
-        plt.gca().add_patch(polygon)
-        # Save the plot
-        # plt.show()
-        plt.savefig('original_scatter.png')
-    else:
-        result_df = pd.concat([new_instances, data], ignore_index=True)
+    result_df = pd.concat([new_instances, data], ignore_index=True)
     
     # Define colors and markers
     colors = {
         "Original Instances": "grey",
         "Evolved Population (n=12)": "brown",
-        "Evolved Population (n=14)": "navy",
+        "Evolved Population (n=20)": "navy",
         "Evolved Population (n=24)": "green",
         "Evolved Population (n=50)": "purple"
 
@@ -86,7 +66,7 @@ def main():
     markers = {
         "Original Instances": "o",  # Circle
         "Evolved Population (n=12)": "D",  # Diamond
-        "Evolved Population (n=14)": "D",  # Diamond
+        "Evolved Population (n=20)": "D",  # Diamond
         "Evolved Population (n=24)": "D",  # Diamond
         "Evolved Population (n=50)": "D"  # Diamond
     }
@@ -95,26 +75,38 @@ def main():
     plt.figure(figsize=(10, 8))
 
     # Plot the target point
+    for target_point in target_points:
+        plt.scatter(target_point[0], target_point[1], color='black', marker='x', s=10)
 
     # # Plot each group with its respective color and marker
-    # for population_type, group_df in result_df.groupby('Population Type'):
-    #     # If the population type is 'Original Instances', alpha is 0.3, else 1
-    #     alpha = 0.3 if population_type == 'Original Instances' else 0.8
-    #     plt.scatter(group_df['z_1'], group_df['z_2'], 
-    #                 color=colors[population_type], 
-    #                 marker=markers[population_type], 
-    #                 label=population_type, 
-    #                 alpha=alpha)
-        
+    # Plot Original Instances separately to ensure they are plotted first
+    original_instances = result_df[result_df['Population Type'] == 'Original Instances']
+    plt.scatter(original_instances['z_1'], original_instances['z_2'], 
+                color=colors['Original Instances'], 
+                marker=markers['Original Instances'], 
+                label='Original Instances', 
+                alpha=0.3)
+
+    # Plot the rest of the groups
+    for population_type, group_df in result_df.groupby('Population Type'):
+        # Skip plotting Original Instances again
+        if population_type == 'Original Instances':
+            continue
+        alpha = 0.8
+        plt.scatter(group_df['z_1'], group_df['z_2'], 
+                    color=colors[population_type], 
+                    marker=markers[population_type], 
+                    label=population_type, 
+                    alpha=alpha)
 
 
     # Plot boundary
-    boundary_points = bounds[['z_1', 'z_2']].values
-    plt.gca().add_patch(Polygon(boundary_points, closed=True, fill=False, edgecolor='r', linewidth=2))
+    # boundary_points = bounds[['z_1', 'z_2']].values
+    # plt.gca().add_patch(Polygon(boundary_points, closed=True, fill=False, edgecolor='r', linewidth=2))
 
 
     # Set plot aesthetics
-    # plt.title("Evolved Instances")
+    plt.title("Evolved Instances")
 
 
 
@@ -124,7 +116,7 @@ def main():
     plt.grid(True)
 
     # Write the plot to a file
-    plt.savefig('new_scatter.png')
+    plt.savefig('evolved_instances_all.png')
 
 if __name__ == "__main__":
     main()

@@ -14,6 +14,19 @@ from src.preprocess import get_z1_z2_projection
 from src.generate_planar_graphs import generate_planar_graph_with_min_edges
 from src.graph_instance import GraphInstance
 
+def convert_data_values(graph):
+    for node, data in graph.nodes(data=True):
+        for key, value in data.items():
+            if isinstance(value, list):
+                data[key] = str(value)
+                
+    for u, v, data in graph.edges(data=True):
+        for key, value in data.items():
+            if isinstance(value, list):
+                data[key] = str(value)
+    
+    return graph
+
 
 def initialise_population(
     population_size, number_of_nodes, min_edges, graph_types, **kwargs
@@ -142,7 +155,8 @@ def fitness_function(graph, target_point, experiment):
     z1_z2_projection = get_z1_z2_projection(graph, experiment=experiment)
     # If (nan, nan) is returned, raise an error
     if np.isnan(z1_z2_projection).all():
-        raise ValueError("Projection returned NaN values")
+        # Return a large value to penalize the graph
+        return 1e6
     # Calculate the distance from the target point
     distance = np.linalg.norm(z1_z2_projection - target_point)
     return distance
@@ -348,7 +362,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--number_of_nodes",
         type=int,
-        default=12,
+        default=20,
         help="The number of nodes for the graphs in the population.",
     )
     parser.add_argument(
@@ -459,7 +473,16 @@ if __name__ == "__main__":
     best_graph_index = np.argmin(fitness_scores)
     best_graph = initial_population[best_graph_index]
     path = os.path.join(save_path, "best_graph_gen_0.graphml")
-    nx.write_graphml(best_graph, path)
+
+    # Handle case where best_graph is a list of graphs (just take the first one)
+    if isinstance(best_graph, list):
+        best_graph = best_graph[0]
+        # Convert the data values in the graph
+        best_graph = convert_data_values(best_graph)
+        nx.write_graphml(best_graph, path)
+    else:
+        best_graph = convert_data_values(best_graph)
+        nx.write_graphml(best_graph, path)
 
     # Integrate elitism: Select top-performing individuals (elites) and rest of the population for breeding
     selected_population = elitist_selection(
@@ -530,6 +553,14 @@ if __name__ == "__main__":
                 path = os.path.join(save_path, f"best_graph_gen_{gen+1}.graphml")
                 nx.write_graphml(best_graph, path)
                 break  # Stops the loop
+
+        # Check if the best fitness is within 0.05 of the target point
+        if abs(best_fitness) < 0.05:
+            print("Stopping criterion met: Best fitness is within 0.01 of the target point.")
+            stop_criterion_met = True
+            path = os.path.join(save_path, f"best_graph_gen_{gen+1}.graphml")
+            nx.write_graphml(best_graph, path)
+            break  # Stops the loop
     
     # If stopping criterion not met, save the best graph in the final population
     if not stop_criterion_met:

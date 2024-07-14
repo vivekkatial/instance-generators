@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # Base directory for the operation, assumed to be the root directory you're working from
-base_dir="qaoa-param-evolved"
+base_dir="INFORMS-Revision-12-node-network"
 
 # Target directory containing the subdirectories
 target_dir="${base_dir}/target-point-graphs"
 
 # Ensure the base directory for best graphs exists in the root
-mkdir -p "${base_dir}/best_graphs_14"
+mkdir -p "${base_dir}/best_graphs_20"
 
 # Iterate over each subdirectory in target-point-graphs
 for dir in ${target_dir}/target_point_*; do
@@ -19,7 +19,7 @@ for dir in ${target_dir}/target_point_*; do
         node_size=${BASH_REMATCH[1]}
     else
         # Default node size for directories not specifying a node size
-        node_size=12
+        node_size=20
     fi
 
     # Ensure the target directory for best graphs exists in the root

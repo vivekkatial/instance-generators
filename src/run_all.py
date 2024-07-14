@@ -35,7 +35,8 @@ def main(target_points):
     max_workers = os.cpu_count() - 2
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
         # Only run for target_points that do not have a directory yet
-        target_points_to_process = [target_point for target_point in target_points if not check_existing_directories(target_point)]
+        # target_points_to_process = [target_point for target_point in target_points if not check_existing_directories(target_point)]
+        target_points_to_process = target_points
         # Print the target_points that will be processed
         print(f"Processing {len(target_points_to_process)} target points: {target_points_to_process}")
         # Count the number of target_points that already have a directory

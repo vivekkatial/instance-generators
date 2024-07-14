@@ -14,7 +14,7 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
-G = nx.read_gpickle(args.graph)
+G = nx.read_graphml(args.graph)
 
 features = get_graph_features(G)
 print(json.dumps(features, indent=4))
