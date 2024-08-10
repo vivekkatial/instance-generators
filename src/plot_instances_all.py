@@ -106,17 +106,26 @@ def main():
 
 
     # Set plot aesthetics
-    plt.title("Evolved Instances")
+    # plt.title("Evolved Instances")
 
 
+    # Make axis labels larger
+    plt.xlabel("$z_1$", fontsize=20)
+    plt.ylabel("$z_2$", fontsize=20)
+    # Remove the grid lines
+    plt.grid(False)
+    # Make the chart frame black
+    plt.gca().spines['bottom'].set_color('black')
+    plt.gca().spines['top'].set_color('black')
+    plt.gca().spines['right'].set_color('black')
+    plt.gca().spines['left'].set_color('black')
 
-    plt.xlabel("$z_1$")
-    plt.ylabel("$z_2$")
-    plt.legend(title="Population Type")
-    plt.grid(True)
+    
+
+    plt.legend(title="Population Type", title_fontsize='larger', fontsize='larger')
 
     # Write the plot to a file
-    plt.savefig('evolved_instances_all.png')
+    plt.savefig('evolved_instances.png', dpi=300)
 
 if __name__ == "__main__":
     main()

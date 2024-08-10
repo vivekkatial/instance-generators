@@ -194,6 +194,14 @@ def integrate_elitism(population, fitness_scores, elite_size):
 
 
 def elitist_selection(population, fitness_scores, elite_size):
+    """ Elitist selection: Select the top-performing individuals from the population.
+    Parameters:
+    - population: List of individuals in the current generation.
+    - fitness_scores: Corresponding fitness scores for the population.
+    - elite_size: Number of top individuals to select.
+    Returns:
+    - new_population: Population for the next generation with elites included.
+    """
     # Ensure elite_size does not exceed the population size
     elite_size = min(elite_size, len(population))
 
